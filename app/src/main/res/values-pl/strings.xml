@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="language_manager">Menadżer języków</string>
+    <string name="settings">Ustawienia</string>
+    <string name="select_source">Wybierz język źródłowy</string>
+    <string name="select_dest">Wybierz język docelowy</string>
+    <string name="upload_dict_btt">Pobierz wybrany słownik</string>
+</resources>

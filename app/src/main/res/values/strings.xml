@@ -1,0 +1,7 @@
+<resources>
+    <string name="language_manager">Language manager</string>
+    <string name="settings">Settings</string>
+    <string name="select_source">Select source language</string>
+    <string name="select_dest">Select destination language</string>
+    <string name="upload_dict_btt">Upload selected dictionary</string>
+</resources>

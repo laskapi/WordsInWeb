@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">WordsInWeb</string>
+    <string name="ok">@android:string/ok</string>
+</resources>
