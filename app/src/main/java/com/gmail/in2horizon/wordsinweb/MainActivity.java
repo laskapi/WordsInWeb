@@ -2,35 +2,14 @@ package com.gmail.in2horizon.wordsinweb;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
 
-import android.content.AsyncQueryHandler;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.webkit.WebSettings;
-
-import com.gmail.in2horizon.wordsinweb.database.Translation;
-import com.gmail.in2horizon.wordsinweb.database.TranslationDao;
-import com.gmail.in2horizon.wordsinweb.database.WiwDatabase;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-
-import retrofit2.http.HTTP;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         prefs.edit().putBoolean(key, true).apply();
 //        dbInit();
 
-   //     loadList();
+        //     loadList();
         return true;
     }
 
@@ -106,8 +85,12 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.language_manager:
-                LanguageManagerDialogFragment lm= new LanguageManagerDialogFragment();
-                lm.show(getSupportFragmentManager(),LanguageManagerDialogFragment.TAG);
+                //     DictionariesManager manager= new DictionariesManager
+                //     (getSupportFragmentManager());
+                //    manager.run();
+                DictionaryDialog dialog = new DictionaryDialog();
+                dialog.show(getSupportFragmentManager(),DictionaryDialog.TAG);
+                break;
             default:
                 Log.d(TAG, "No item resolved");
                 break;

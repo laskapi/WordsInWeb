@@ -4,8 +4,12 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2465" />
+        <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable/background.xml" value="0.2265" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/dictionaries_manager.xml" value="0.25" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/language_manager.xml" value="0.22826086956521738" />
+        <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/my_progress_ar.xml" value="0.25" />
+        <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/my_progress_bar.xml" value="0.25" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/menu/menu.xml" value="0.264" />
         <entry key="..\:/Users/Piotrek/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/activity_main.xml" value="0.22826086956521738" />
       </map>
