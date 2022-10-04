@@ -9,7 +9,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -31,7 +30,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,18 +45,30 @@ public class DictionaryDialog extends DialogFragment {
     public static final String TAG = "DictionaryDialog";
     private static final String URL = "https://download.wikdict.com/dictionaries/sqlite/2_2022-01";
 
+    private static final String ISO_TO_NAME = "ISO_TO_NAME";
+    private static final String ISO_TO_NAME_BIMAP = "ISO_TO_NAME_BIMAP";
+    private static final String AVAILABLE_DIRECTORY_NAMES = "AVAILABLE_DIRECTORY_NAMES";
+    private static final String AVAILABLE_DIRECTORY_ISOS = "AVAILABLE_DIRECTORY_ISOS";
+    private static final String SRC_ITEMS = "SRC_ITEMS";
+
+
     private View view;
-    private List<String> srcItems=new ArrayList<>();
-    private List<String> dstItems=new ArrayList<>();
-    private Map<String, TreeSet<String>> availableIsoDictionaries;
+    private List<String> srcItems = new ArrayList<>();
+    private List<String> dstItems = new ArrayList<>();
+
+    private Map<String, TreeSet<String>> availableDirectoryIsos;
+    private Map<String, TreeSet<String>> availableDictionaryNames;
     private HashBiMap<String, String> isoToNameBiMap;
+    private HashMap<String, String> isoToName = new HashMap<>();
     private MyProgressBar myProgressBar;
+    private ArrayAdapter<String> srcAdapter;
+    private ArrayAdapter<String> dstAdapter;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Log.d(TAG, "onCreate");
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         srcItems.add(getString(R.string.loading));
@@ -67,18 +78,22 @@ public class DictionaryDialog extends DialogFragment {
             @Override
             public void run() {
                 if (savedInstanceState != null) {
-                    availableIsoDictionaries =
+                    availableDirectoryIsos =
                             (Map<String, TreeSet<String>>) savedInstanceState.getSerializable(
-                                    "availableIsoDictionaries");
-                    srcItems = savedInstanceState.getStringArrayList("srcItems");
+                                    AVAILABLE_DIRECTORY_ISOS);
+                    availableDictionaryNames =
+                            (Map<String, TreeSet<String>>) savedInstanceState.getSerializable(
+                                    AVAILABLE_DIRECTORY_NAMES);
+                    srcItems = savedInstanceState.getStringArrayList(SRC_ITEMS);
                     isoToNameBiMap = (HashBiMap<String, String>) savedInstanceState.getSerializable(
-                            "isoToNameBiMap");
-
+                            ISO_TO_NAME_BIMAP);
+                    isoToName = (HashMap<String, String>) savedInstanceState.getSerializable(
+                            ISO_TO_NAME);
 
                 } else {
                     loadDictionaries();
+                    handler.post(() -> updateSpinners());
                 }
-                handler.post(() -> updateSpinners());
             }
         };
 
@@ -90,14 +105,18 @@ public class DictionaryDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 
+        Log.d(TAG, "onCreateDialog");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         view = inflater.inflate(R.layout.dictionaries_manager, null);
 
+        updateSpinners();
+
+
         if (savedInstanceState == null) {
             myProgressBar = view.findViewById(R.id.my_progress_bar);
-            myProgressBar.show();
+                    myProgressBar.show();
         }
 
 
@@ -116,43 +135,41 @@ public class DictionaryDialog extends DialogFragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putStringArrayList("srcItems", (ArrayList<String>) srcItems);
-        outState.putSerializable("availableIsoDictionaries",
-                (Serializable) availableIsoDictionaries);
-        outState.putSerializable("isoToNameBiMap", isoToNameBiMap);
+        outState.putStringArrayList(SRC_ITEMS, (ArrayList<String>) srcItems);
+        outState.putSerializable(AVAILABLE_DIRECTORY_ISOS,
+                (Serializable) availableDirectoryIsos);
+        outState.putSerializable(AVAILABLE_DIRECTORY_NAMES,
+                (Serializable) availableDictionaryNames);
+        outState.putSerializable(ISO_TO_NAME_BIMAP, isoToNameBiMap);
+        outState.putSerializable(ISO_TO_NAME, isoToName);
         super.onSaveInstanceState(outState);
     }
 
     private void updateSpinners() {
-
         Spinner srcSpinner = view.findViewById(R.id.src_spinner);
-        ArrayAdapter<String> srcAdapter = new ArrayAdapter<String>(getContext()
+        srcAdapter = new ArrayAdapter<String>(getContext()
                 , android.R.layout.simple_spinner_item,
                 srcItems);
-        srcAdapter.setDropDownViewResource(
-                android.R.layout
-                        .simple_spinner_dropdown_item);
+        srcAdapter.setDropDownViewResource(android.R.layout
+                .simple_spinner_dropdown_item);
         srcSpinner.setAdapter(srcAdapter);
 
         Spinner dstSpinner = view.findViewById(R.id.dst_spinner);
-        ArrayAdapter<String> dstAdapter = new ArrayAdapter<String>(getContext()
-                , android.R.layout.simple_spinner_item,dstItems);
-        dstAdapter.setDropDownViewResource(
-                android.R.layout
-                        .simple_spinner_dropdown_item);
+        dstAdapter = new ArrayAdapter<String>(getContext()
+                , android.R.layout.simple_spinner_item, dstItems);
+        dstAdapter.setDropDownViewResource(android.R.layout
+                .simple_spinner_dropdown_item);
         dstSpinner.setAdapter(dstAdapter);
 
         srcSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                dstSpinner.getAdapter().clear();
-                String selectedIso =
-                        isoToNameBiMap.inverse().get(parent.getAdapter().getItem(position));
-
-                dstItems =
-                        availableIsoDictionaries.get(selectedIso).stream().map(s -> isoToNameBiMap.get(s)).collect(Collectors.toCollection(ArrayList::new));
-                dstSpinner.getAdapter().addAll(dstItems);
-
+                String key = (String) parent.getAdapter().getItem(position);
+                dstAdapter.clear();
+                if(availableDictionaryNames.containsKey(key)) {
+                    dstAdapter.addAll(availableDictionaryNames.get(key));
+                    dstSpinner.setSelection(0);
+                }
                 if (myProgressBar != null) {
                     myProgressBar.hide();
                 }
@@ -165,7 +182,6 @@ public class DictionaryDialog extends DialogFragment {
             }
         });
 
-
     }
 
     private void loadDictionaries() {
@@ -176,14 +192,31 @@ public class DictionaryDialog extends DialogFragment {
 
             conn = new URL(URL).openConnection();
             final InputStream is = conn.getInputStream();
-            availableIsoDictionaries = parseHtml(is);
+            availableDirectoryIsos = parseHtml(is);
+            isoToName.replaceAll((k, v) -> new Locale(k).getDisplayLanguage());
 
+            availableDictionaryNames = new TreeMap<String,
+                    TreeSet<String>>();
+            availableDirectoryIsos.forEach((k, v) -> {
+
+                availableDictionaryNames.put(isoToName.get(k),
+                        v.stream().map(iso -> isoToName.get(iso)).collect(Collectors.toCollection(TreeSet::new)));
+            });
+
+            /*
             isoToNameBiMap = HashBiMap.create();
-            Arrays.stream(Locale.getISOLanguages()).filter((s) -> availableIsoDictionaries.containsKey(s)).forEach((s) -> isoToNameBiMap.put(s,
-                    new Locale(s).getDisplayLanguage()));
 
-            srcItems = availableIsoDictionaries
-                    .keySet().stream().map((s) -> isoToNameBiMap.get(s)).collect(Collectors.toCollection(ArrayList::new));
+            Arrays.stream(Locale.getISOLanguages()).filter((s) -> availableIsoDictionaries
+            .containsKey(s)).forEach((s) -> isoToNameBiMap.put(s,
+                    new Locale(s).getDisplayLanguage()));
+*/
+
+            srcItems = new ArrayList<>(availableDictionaryNames.keySet());
+
+            //         srcItems = availableIsoDictionaries
+            //                .keySet().stream().map((s) -> isoToNameBiMap.get(s)).collect
+            //                (Collectors
+            //                .toCollection(ArrayList::new));
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -193,6 +226,7 @@ public class DictionaryDialog extends DialogFragment {
 
     private Map<String, TreeSet<String>> parseHtml(InputStream is) throws IOException {
         Map<String, TreeSet<String>> availableIsoDictionaries = new TreeMap<>();
+
 
         try {
             XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
@@ -243,6 +277,9 @@ public class DictionaryDialog extends DialogFragment {
                                   String filename) {
         String src = filename.substring(0, 2);
         String dst = filename.substring(3, 5);
+
+        isoToName.putIfAbsent(src, null);
+        isoToName.putIfAbsent(dst, null);
 
         availableIsoDictionaries.computeIfAbsent(src, k -> new TreeSet<>()).add(dst);
 
