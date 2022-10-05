@@ -40,39 +40,39 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class DictionaryDialog extends DialogFragment {
+public class DictionaryDialog extends DialogFragment implements OnNamesReadyListener {
 
     public static final String TAG = "DictionaryDialog";
-    private static final String URL = "https://download.wikdict.com/dictionaries/sqlite/2_2022-01";
 
+/*
     private static final String ISO_TO_NAME = "ISO_TO_NAME";
     private static final String ISO_TO_NAME_BIMAP = "ISO_TO_NAME_BIMAP";
     private static final String AVAILABLE_DIRECTORY_NAMES = "AVAILABLE_DIRECTORY_NAMES";
     private static final String AVAILABLE_DIRECTORY_ISOS = "AVAILABLE_DIRECTORY_ISOS";
     private static final String SRC_ITEMS = "SRC_ITEMS";
+*/
 
-
-    private View view;
-    private List<String> srcItems = new ArrayList<>();
-    private List<String> dstItems = new ArrayList<>();
-
-    private Map<String, TreeSet<String>> availableDirectoryIsos;
-    private Map<String, TreeSet<String>> availableDictionaryNames;
-    private HashBiMap<String, String> isoToNameBiMap;
-    private HashMap<String, String> isoToName = new HashMap<>();
     private MyProgressBar myProgressBar;
+    private View view;
+    private final List<String> srcItems = new ArrayList<>();
+    private final List<String> dstItems = new ArrayList<>();
+
     private ArrayAdapter<String> srcAdapter;
     private ArrayAdapter<String> dstAdapter;
+    private DictionaryNamesProvider.Names names;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
+
         srcItems.add(getString(R.string.loading));
         dstItems.add(getString(R.string.loading));
+
+   /*
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
 
         Runnable loadDictionaries = new Runnable() {
             @Override
@@ -98,7 +98,7 @@ public class DictionaryDialog extends DialogFragment {
         };
 
         executor.execute(loadDictionaries);
-
+*/
     }
 
     @NonNull
@@ -111,41 +111,6 @@ public class DictionaryDialog extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         view = inflater.inflate(R.layout.dictionaries_manager, null);
 
-        updateSpinners();
-
-
-        if (savedInstanceState == null) {
-            myProgressBar = view.findViewById(R.id.my_progress_bar);
-                    myProgressBar.show();
-        }
-
-
-        builder.setTitle(R.string.language_manager)
-                .setView(view)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.d(TAG, "button OK");
-                    }
-                });
-
-        return builder.create();
-    }
-
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putStringArrayList(SRC_ITEMS, (ArrayList<String>) srcItems);
-        outState.putSerializable(AVAILABLE_DIRECTORY_ISOS,
-                (Serializable) availableDirectoryIsos);
-        outState.putSerializable(AVAILABLE_DIRECTORY_NAMES,
-                (Serializable) availableDictionaryNames);
-        outState.putSerializable(ISO_TO_NAME_BIMAP, isoToNameBiMap);
-        outState.putSerializable(ISO_TO_NAME, isoToName);
-        super.onSaveInstanceState(outState);
-    }
-
-    private void updateSpinners() {
         Spinner srcSpinner = view.findViewById(R.id.src_spinner);
         srcAdapter = new ArrayAdapter<String>(getContext()
                 , android.R.layout.simple_spinner_item,
@@ -161,13 +126,52 @@ public class DictionaryDialog extends DialogFragment {
                 .simple_spinner_dropdown_item);
         dstSpinner.setAdapter(dstAdapter);
 
+
+        if (savedInstanceState == null) {
+            myProgressBar = view.findViewById(R.id.my_progress_bar);
+            myProgressBar.show();
+        }
+
+
+        builder.setTitle(R.string.language_manager)
+                .setView(view)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.d(TAG, "button OK");
+                    }
+                });
+        DictionaryNamesProvider.registerOnNamesReadyListener(this);
+
+        return builder.create();
+    }
+
+
+/*
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putStringArrayList(SRC_ITEMS, (ArrayList<String>) srcItems);
+        outState.putSerializable(AVAILABLE_DIRECTORY_ISOS,
+                (Serializable) availableDirectoryIsos);
+        outState.putSerializable(AVAILABLE_DIRECTORY_NAMES,
+                (Serializable) availableDictionaryNames);
+        outState.putSerializable(ISO_TO_NAME_BIMAP, isoToNameBiMap);
+        outState.putSerializable(ISO_TO_NAME, isoToName);
+        super.onSaveInstanceState(outState);
+    }
+*/
+
+    private void updateSpinners() {
+
+        Spinner srcSpinner = view.findViewById(R.id.src_spinner);
         srcSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String key = (String) parent.getAdapter().getItem(position);
-                dstAdapter.clear();
-                if(availableDictionaryNames.containsKey(key)) {
-                    dstAdapter.addAll(availableDictionaryNames.get(key));
+                if (names.availableDictionaryNames.containsKey(key)) {
+                    Spinner dstSpinner = getDialog().findViewById(R.id.dst_spinner);
+                    dstAdapter.clear();
+                    dstAdapter.addAll(names.availableDictionaryNames.get(key));
                     dstSpinner.setSelection(0);
                 }
                 if (myProgressBar != null) {
@@ -178,112 +182,19 @@ public class DictionaryDialog extends DialogFragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
 
-    }
+        srcAdapter.clear();
+        srcAdapter.addAll(names.availableDictionaryNames.keySet());
 
-    private void loadDictionaries() {
-
-        final URLConnection conn;
-
-        try {
-
-            conn = new URL(URL).openConnection();
-            final InputStream is = conn.getInputStream();
-            availableDirectoryIsos = parseHtml(is);
-            isoToName.replaceAll((k, v) -> new Locale(k).getDisplayLanguage());
-
-            availableDictionaryNames = new TreeMap<String,
-                    TreeSet<String>>();
-            availableDirectoryIsos.forEach((k, v) -> {
-
-                availableDictionaryNames.put(isoToName.get(k),
-                        v.stream().map(iso -> isoToName.get(iso)).collect(Collectors.toCollection(TreeSet::new)));
-            });
-
-            /*
-            isoToNameBiMap = HashBiMap.create();
-
-            Arrays.stream(Locale.getISOLanguages()).filter((s) -> availableIsoDictionaries
-            .containsKey(s)).forEach((s) -> isoToNameBiMap.put(s,
-                    new Locale(s).getDisplayLanguage()));
-*/
-
-            srcItems = new ArrayList<>(availableDictionaryNames.keySet());
-
-            //         srcItems = availableIsoDictionaries
-            //                .keySet().stream().map((s) -> isoToNameBiMap.get(s)).collect
-            //                (Collectors
-            //                .toCollection(ArrayList::new));
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private Map<String, TreeSet<String>> parseHtml(InputStream is) throws IOException {
-        Map<String, TreeSet<String>> availableIsoDictionaries = new TreeMap<>();
-
-
-        try {
-            XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
-
-            parser.setInput(is, "UTF-8");
-
-
-            int eventType = parser.getEventType();
-            boolean readTextFlag = false;
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-
-                String tagName = parser.getName();
-
-                switch (eventType) {
-                    case XmlPullParser.START_TAG:
-                        if (tagName.equals("a")) {
-                            readTextFlag = true;
-                        }
-                        break;
-                    case XmlPullParser.TEXT:
-                        if (readTextFlag) {
-                            String dictionaryFilename = parser.getText();
-                            if (isValidDictionaryName(dictionaryFilename)) {
-                                FillDictionaries(availableIsoDictionaries, dictionaryFilename);
-                            }
-                            readTextFlag = false;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-
-                eventType = parser.next();
-            }
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        }
-        return availableIsoDictionaries;
-    }
-
-    private boolean isValidDictionaryName(String filename) {
-        return filename.matches("^[a-z]{2}-[a-z]{2}\\.(.*)");
-    }
-
-
-    private void FillDictionaries(Map<String, TreeSet<String>> availableIsoDictionaries,
-                                  String filename) {
-        String src = filename.substring(0, 2);
-        String dst = filename.substring(3, 5);
-
-        isoToName.putIfAbsent(src, null);
-        isoToName.putIfAbsent(dst, null);
-
-        availableIsoDictionaries.computeIfAbsent(src, k -> new TreeSet<>()).add(dst);
 
     }
 
 
+    @Override
+    public void onNamesReady(DictionaryNamesProvider.Names names) {
+        this.names=names;
+        updateSpinners();
+    }
 }
