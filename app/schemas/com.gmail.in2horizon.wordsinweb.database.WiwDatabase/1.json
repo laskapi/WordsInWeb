@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "77e0745ddaa105d54589151823710f20",
+    "identityHash": "1af823eb131c93fdca454d11d7ab7c24",
     "entities": [
       {
         "tableName": "Translation",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `en` TEXT, `de` TEXT, `fr` TEXT, `es` TEXT, `pl` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `src` TEXT, `dst` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -15,32 +15,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "en",
-            "columnName": "en",
+            "fieldPath": "src",
+            "columnName": "src",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "de",
-            "columnName": "de",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "fr",
-            "columnName": "fr",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "es",
-            "columnName": "es",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "pl",
-            "columnName": "pl",
+            "fieldPath": "dst",
+            "columnName": "dst",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -49,7 +31,7 @@
           "columnNames": [
             "id"
           ],
-          "autoGenerate": false
+          "autoGenerate": true
         },
         "indices": [],
         "foreignKeys": []
@@ -58,7 +40,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '77e0745ddaa105d54589151823710f20')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1af823eb131c93fdca454d11d7ab7c24')"
     ]
   }
 }

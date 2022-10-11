@@ -93,14 +93,14 @@ public class MyWebView extends WebView {
                     public void onReceiveValue(String text) {
                         if (!text.isEmpty()) {
                             Log.v(TAG, "Webview selected text: " + text);
-                            translate(text);
+                            //translate(text);
                         }
                     }
                 });
     }
 
 
-
+/*
     void translate(String text) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://libretranslate.com/")
@@ -122,7 +122,7 @@ Log.d("Success",
             }
         });
 
-    }
+    }*/
 
     private void getElement(MotionEvent event) {
         float x = event.getX();

@@ -6,12 +6,16 @@ import androidx.room.PrimaryKey;
 
 @Entity
 public class Translation {
-    @PrimaryKey
-    @NonNull
-    Long id=0l;
-    public String en;
-    public String de;
-    public String fr;
-    public String es;
-    public String pl;
+    @PrimaryKey(autoGenerate = true)
+
+    long id= 0;
+    public String src;
+    public String dst;
+
+    public Translation(String src, String dst) {
+
+        this.src = src;
+        this.dst = dst;
+    }
+
 }

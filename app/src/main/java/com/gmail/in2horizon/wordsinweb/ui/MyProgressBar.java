@@ -1,21 +1,14 @@
 package com.gmail.in2horizon.wordsinweb.ui;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.util.AndroidException;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 
 import com.gmail.in2horizon.wordsinweb.R;
 
@@ -23,6 +16,7 @@ public class MyProgressBar extends ConstraintLayout {
 
 
     private static final String TAG = "MyPRogressBar";
+    private TextView progressTextView;
 
     public MyProgressBar(@NonNull Context context) {
         super(context);
@@ -38,20 +32,38 @@ public class MyProgressBar extends ConstraintLayout {
         LayoutInflater inflater =
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.my_progress_bar, this);
+        progressTextView = findViewById(R.id.progressTextView);
+    }
 
+    public void setProgress(Object amount) {
+        if (amount==null) {
+            progressTextView.setText(getContext().getString(R.string.done));
+            getHandler().postDelayed(this::hide, 1000);
+
+        } else {
+            progressTextView.setText(getContext().getString(R.string.loading, (String) amount));
+        }
     }
 
     public void show() {
-        MyProgressBar myProgressBar=((View) getParent()).findViewById(R.id.my_progress_bar);
-       myProgressBar.setBackgroundColor(0xaa000000);
-        myProgressBar.setClickable(true);
-        myProgressBar.setVisibility(VISIBLE);
+        setProgress("");
+        setBackgroundColor(0xaa000000);
+        setClickable(true);
+        setVisibility(VISIBLE);
     }
-    public void hide(){
-        MyProgressBar myProgressBar=((View) getParent()).findViewById(R.id.my_progress_bar);
+
+    public void hide() {
+
+        setBackgroundColor(0x00000000);
+        setClickable(false);
+        setVisibility(INVISIBLE);
+
+/*
+        MyProgressBar myProgressBar = ((View) getParent()).findViewById(R.id.my_progress_bar);
         myProgressBar.setBackgroundColor(0x00000000);
         myProgressBar.setClickable(false);
         myProgressBar.setVisibility(INVISIBLE);
+*/
 
     }
 }

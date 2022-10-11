@@ -5,5 +5,8 @@
     <string name="select_source">Wybierz język źródłowy</string>
     <string name="select_dest">Wybierz język docelowy</string>
     <string name="upload_dict_btt">Pobierz wybrany słownik</string>
-    <string name="loading">Wczytuję...</string>
+    <string name="loading">Wczytywanie... %1$s</string>
+    <string name="done">zakończone</string>
+    <string name="delete_dictionary">Usunąć słownik?</string>
+    <string name="delete_dict_btt">Usuń słownik</string>
 </resources>

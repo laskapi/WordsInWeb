@@ -11,16 +11,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.webkit.WebSettings;
 
+import com.gmail.in2horizon.wordsinweb.dictionarymanager.DictionaryDialog;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "WiW";
-    private MyWebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        webView = findViewById(R.id.webView1);
 
         firstInit();
     }
@@ -85,11 +85,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.language_manager:
-                //     DictionariesManager manager= new DictionariesManager
-                //     (getSupportFragmentManager());
-                //    manager.run();
                 DictionaryDialog dialog = new DictionaryDialog();
-                dialog.show(getSupportFragmentManager(),DictionaryDialog.TAG);
+                dialog.show(getSupportFragmentManager(), DictionaryDialog.TAG);
                 break;
             default:
                 Log.d(TAG, "No item resolved");
@@ -102,11 +99,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
+        runDictionaryManagerForTest();
         home();
+    }
+
+    private void runDictionaryManagerForTest() {
+        DictionaryDialog dialog = new DictionaryDialog();
+        dialog.show(getSupportFragmentManager(), DictionaryDialog.TAG);
     }
 
 
     public void home() {
+        MyWebView webView = findViewById(R.id.webView1);
         WebSettings webSetting = webView.getSettings();
         webSetting.setBuiltInZoomControls(true);
         webSetting.setJavaScriptEnabled(true);
