@@ -8,7 +8,6 @@ import android.os.Message;
 
 import androidx.room.Room;
 
-import com.gmail.in2horizon.wordsinweb.R;
 import com.gmail.in2horizon.wordsinweb.database.Translation;
 import com.gmail.in2horizon.wordsinweb.database.TranslationDao;
 import com.gmail.in2horizon.wordsinweb.database.WiwDatabase;
@@ -25,17 +24,23 @@ import java.util.concurrent.Executors;
 public class RoomDbBuilder {
     private static final String TAG = RoomDbBuilder.class.getSimpleName();
     private static final String TMP_FILENAME = "wordsinweb.sqlite3";
-    private static Context context;
+    private final Context context;
 
-    public static void build(Context context, String filename, Handler handler) {
-        RoomDbBuilder.context = context;
+
+    RoomDbBuilder(Context context) {
+        this.context = context;
+    }
+
+    void build(String filename, Handler handler) {
         ExecutorService ex = Executors.newSingleThreadExecutor();
         String dstFilename = context.getFilesDir() + "/" + TMP_FILENAME;
+
         ex.execute(() -> {
 
             WiwDatabase translationsDB = Room.databaseBuilder(context,
-                    WiwDatabase.class, filename/*.substring(0,5)*/)
+                    WiwDatabase.class, filename)
                     .build();
+
 
             TranslationDao translationsDao = translationsDB.translationDao();
 
@@ -88,6 +93,8 @@ public class RoomDbBuilder {
 
                         }
                     } while (cursor.moveToNext());
+                    translationsDB.close();
+
                     Message msg = Message.obtain(handler, 0, null);
                     msg.sendToTarget();
 
@@ -111,4 +118,9 @@ public class RoomDbBuilder {
         });
 
     }
+
+    public boolean deleteDb(String database) {
+       return context.deleteDatabase(database);
+    }
+
 }

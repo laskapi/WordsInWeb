@@ -8,4 +8,6 @@
     <string name="done">done</string>
     <string name="delete_dictionary">Delete dictionary?</string>
     <string name="delete_dict_btt">Delete dictionary</string>
+    <string name="from_language">From language</string>
+    <string name="to_language">To language</string>
 </resources>

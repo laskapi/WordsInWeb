@@ -1,4 +1,4 @@
-package com.gmail.in2horizon.wordsinweb.dictionarymanager;
+package com.gmail.in2horizon.wordsinweb.ui;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -17,12 +17,15 @@ import java.util.List;
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder> {
 
     private final Context context;
-    private final List<String> dataSet;
+    private  List<String> dataSet;
     private int selected_position = -1;
 
     public ItemAdapter(Context context, List<String> dataSet) {
         this.context = context;
         this.dataSet = dataSet;
+    }
+    public void setDataSet(List<String>dataSet){
+        this.dataSet=dataSet;
     }
 
     @NonNull
@@ -65,6 +68,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ItemViewHolder
 
     public int getSelected(){
         return selected_position;
+    }
+
+    public void deselect(){
+        selected_position=-1;
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder {

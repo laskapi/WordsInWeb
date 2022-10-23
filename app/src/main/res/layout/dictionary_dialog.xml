@@ -5,16 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/select_src"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/select_source"
-        app:layout_constraintBottom_toTopOf="@+id/src_spinner"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <Spinner
         android:id="@+id/src_spinner"
@@ -23,22 +13,14 @@
         android:background="@color/design_default_color_secondary"
         android:gravity="center_horizontal"
         android:spinnerMode="dropdown"
-        app:layout_constraintBottom_toTopOf="@+id/select_dst"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/select_src" />
-
-    <TextView
-        android:id="@+id/select_dst"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/select_dest"
+        android:padding="10dp"
+        android:layout_margin="5dp"
         app:layout_constraintBottom_toTopOf="@+id/dst_spinner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/src_spinner" />
+        app:layout_constraintTop_toTopOf="parent"/>
+
 
     <Spinner
         android:id="@+id/dst_spinner"
@@ -47,11 +29,12 @@
         android:background="@color/design_default_color_secondary"
         android:gravity="center_horizontal"
         android:spinnerMode="dropdown"
+        android:padding="10dp"
         app:layout_constraintBottom_toTopOf="@id/upload_dict_btt"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/select_dst" />
+        app:layout_constraintTop_toBottomOf="@+id/src_spinner" />
 
     <Button
         android:id="@+id/upload_dict_btt"

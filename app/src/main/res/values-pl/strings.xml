@@ -9,4 +9,6 @@
     <string name="done">zakończone</string>
     <string name="delete_dictionary">Usunąć słownik?</string>
     <string name="delete_dict_btt">Usuń słownik</string>
+    <string name="from_language">Z języka</string>
+    <string name="to_language">Na język</string>
 </resources>

@@ -11,7 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.webkit.WebSettings;
 
-import com.gmail.in2horizon.wordsinweb.dictionarymanager.DictionaryDialog;
+import com.gmail.in2horizon.wordsinweb.ui.DictionaryDialog;
 
 public class MainActivity extends AppCompatActivity {
 
