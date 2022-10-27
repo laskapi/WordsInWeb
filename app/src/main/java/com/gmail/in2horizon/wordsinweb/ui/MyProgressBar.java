@@ -53,17 +53,9 @@ public class MyProgressBar extends ConstraintLayout {
     }
 
     public void hide() {
-
         setBackgroundColor(0x00000000);
         setClickable(false);
         setVisibility(INVISIBLE);
-
-/*
-        MyProgressBar myProgressBar = ((View) getParent()).findViewById(R.id.my_progress_bar);
-        myProgressBar.setBackgroundColor(0x00000000);
-        myProgressBar.setClickable(false);
-        myProgressBar.setVisibility(INVISIBLE);
-*/
 
     }
 }

@@ -3,6 +3,7 @@ package com.gmail.in2horizon.wordsinweb.dictionarymanager;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 
@@ -12,6 +13,7 @@ import com.gmail.in2horizon.wordsinweb.database.Translation;
 import com.gmail.in2horizon.wordsinweb.database.TranslationDao;
 import com.gmail.in2horizon.wordsinweb.database.WiwDatabase;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +26,10 @@ import java.util.concurrent.Executors;
 public class RoomDbBuilder {
     private static final String TAG = RoomDbBuilder.class.getSimpleName();
     private static final String TMP_FILENAME = "wordsinweb.sqlite3";
+    private static final int WORK_IN_PROGRESS = 0;
+    private static final int WORK_DONE = 1;
+
+
     private final Context context;
 
 
@@ -31,33 +37,35 @@ public class RoomDbBuilder {
         this.context = context;
     }
 
-    void build(String filename, Handler handler) {
+
+    void build(String srcUrl, Handler handler) {
         ExecutorService ex = Executors.newSingleThreadExecutor();
-        String dstFilename = context.getFilesDir() + "/" + TMP_FILENAME;
+
 
         ex.execute(() -> {
+            String tmpUrl = context.getFilesDir() + "/" + TMP_FILENAME;
+            Uri u = Uri.parse(srcUrl);
+            File f = new File("" + u);
+            String filename = f.getName();
 
             WiwDatabase translationsDB = Room.databaseBuilder(context,
                     WiwDatabase.class, filename)
                     .build();
-
-
-            TranslationDao translationsDao = translationsDB.translationDao();
+            TranslationDao translationsDao = translationsDB.getTranslationDao();
 
             try {
 
                 InputStream inputStream =
-                        new URL(DictionaryNamesProvider.mUrl + "/" + filename).openStream();
-
-                FileOutputStream fileOutputStream = new FileOutputStream(dstFilename);
+                        new URL(srcUrl).openStream();
+                FileOutputStream fileOutputStream = new FileOutputStream(tmpUrl);
 
                 byte[] buffer = new byte[65536];
                 int n = 0;
                 int percent = 0;
                 while (-1 != (n = inputStream.read(buffer))) {
-                    if (!handler.hasMessages(0) && percent < 79) {
+                    if (!handler.hasMessages(WORK_IN_PROGRESS) && percent < 79) {
                         percent += 1;
-                        Message msg = Message.obtain(handler, 0, percent + " %");
+                        Message msg = Message.obtain(handler, WORK_IN_PROGRESS, percent + " %");
                         msg.sendToTarget();
                     }
 
@@ -66,8 +74,9 @@ public class RoomDbBuilder {
                 fileOutputStream.flush();
                 inputStream.close();
                 fileOutputStream.close();
+
                 SQLiteDatabase sqLiteDatabase =
-                        SQLiteDatabase.openDatabase(dstFilename, null,
+                        SQLiteDatabase.openDatabase(tmpUrl, null,
                                 SQLiteDatabase.OPEN_READONLY);
 
                 String query = "SELECT written_rep,trans_list FROM simple_translation";
@@ -84,9 +93,9 @@ public class RoomDbBuilder {
                             translationsDao.insertAll(list);
                             list.clear();
                             counter = 0;
-                            if (!handler.hasMessages(0) && percent < 99) {
+                            if (!handler.hasMessages(WORK_IN_PROGRESS) && percent < 99) {
                                 percent += progressStep;
-                                Message msg = Message.obtain(handler, 0, percent + " %");
+                                Message msg = Message.obtain(handler, WORK_IN_PROGRESS, percent + " %");
                                 msg.sendToTarget();
 
                             }
@@ -94,23 +103,14 @@ public class RoomDbBuilder {
                         }
                     } while (cursor.moveToNext());
                     translationsDB.close();
-
-                    Message msg = Message.obtain(handler, 0, null);
+                    handler.removeMessages(WORK_IN_PROGRESS);
+                    Message msg = Message.obtain(handler, WORK_DONE, null);
                     msg.sendToTarget();
 
                 }
-           /*
 
-                cursor=translationsDB.query("Select src,dst from Translation",null);
-                if (cursor.moveToFirst()){
-                    do{
-                        Log.d(TAG, cursor.getString(0) + " :: " + cursor.getString(1));
-
-                    }while(cursor.moveToNext());
-                }
-*/
                 cursor.close();
-
+                translationsDB.close();
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -119,8 +119,8 @@ public class RoomDbBuilder {
 
     }
 
-    public boolean deleteDb(String database) {
-       return context.deleteDatabase(database);
+    boolean deleteDb(String database) {
+        return context.deleteDatabase(database);
     }
 
 }

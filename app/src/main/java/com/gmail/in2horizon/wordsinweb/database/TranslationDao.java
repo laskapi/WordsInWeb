@@ -9,8 +9,8 @@ import java.util.List;
 @Dao
 public interface TranslationDao {
 
-    @Query("SELECT * FROM Translation WHERE src LIKE:src LIMIT 1")
-    Translation translate(String src);
+    @Query("SELECT dst FROM Translation WHERE src LIKE:src LIMIT 1")
+    String translate(String src);
 
 
     @Insert

@@ -1,31 +1,22 @@
 package com.gmail.in2horizon.wordsinweb;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.MotionEventCompat;
 
-import java.util.Map;
-import java.util.Timer;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Body;
+interface OnTranslateListener {
+    void translate(String src);
+}
 
 public class MyWebView extends WebView {
-    private static final String TAG = "WEBVIEW";
+    private static final String TAG = MyWebView.class.getSimpleName();
+    private OnTranslateListener onTranslateListener;
 
     public MyWebView(@NonNull Context context) {
         super(context);
@@ -85,6 +76,10 @@ public class MyWebView extends WebView {
 
     }
 
+    public void setOnGetTranslationListener(OnTranslateListener onTranslateListener) {
+        this.onTranslateListener = onTranslateListener;
+    }
+
     private void getSelection() {
         evaluateJavascript("(function(){return window.getSelection().toString" +
                         "()})()",
@@ -92,7 +87,8 @@ public class MyWebView extends WebView {
                     @Override
                     public void onReceiveValue(String text) {
                         if (!text.isEmpty()) {
-                            Log.v(TAG, "Webview selected text: " + text);
+                            onTranslateListener.translate(text);
+                            Log.d(TAG, "Webview selected text: " + text);
                             //translate(text);
                         }
                     }
@@ -141,8 +137,6 @@ Log.d("Success",
 
 
     }
-
-
 
 
     void prepareDoc() {
@@ -200,4 +194,9 @@ Log.d("Success",
         );
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+        onTranslateListener=null;
+        super.finalize();
+    }
 }

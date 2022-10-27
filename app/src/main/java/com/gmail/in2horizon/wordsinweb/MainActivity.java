@@ -5,27 +5,101 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebSettings;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 
+import com.gmail.in2horizon.wordsinweb.database.WiwRepo;
+import com.gmail.in2horizon.wordsinweb.databinding.ActivityMainBinding;
+import com.gmail.in2horizon.wordsinweb.dictionarymanager.Dictionary;
+import com.gmail.in2horizon.wordsinweb.dictionarymanager.DictionaryManager;
 import com.gmail.in2horizon.wordsinweb.ui.DictionaryDialog;
+import com.gmail.in2horizon.wordsinweb.ui.CenteredSpinnerObserverAdapter;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Observable;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "WiW";
+    private static final String TAG = "MainActivity";
+    private ActivityMainBinding binding;
+    private WiwRepo wiwRepo;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        firstInit();
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        DictionaryManager.build(this, new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(@NonNull Message msg) {
+
+                DictionaryManager manager = (DictionaryManager) msg.obj;
+                List<String> items = prepareDictionarySpinnerData(manager);
+
+                CenteredSpinnerObserverAdapter<String> adapter =
+                        new CenteredSpinnerObserverAdapter<String>(MainActivity.this,
+                                android.R.layout.simple_spinner_item, items) {
+
+                            @Override
+                            public void update(Observable manager, Object arg) {
+                                clear();
+                                addAll(prepareDictionarySpinnerData((DictionaryManager) manager));
+                                ((ArrayAdapter) binding.dictionariesSpinner.getAdapter())
+                                        .notifyDataSetChanged();
+                            }
+                        };
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                manager.addObserver(adapter);
+
+                binding.dictionariesSpinner.setAdapter(adapter);
+                binding.dictionariesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position,
+                                               long id) {
+                        String name = (String) parent.getAdapter().getItem(position);
+
+                        Optional<Dictionary> dictionary = manager.getUploadedDictionary4name(name);
+
+                        dictionary.ifPresent(value ->
+                                wiwRepo=WiwRepo.getInstance(getApplicationContext(),
+                                value.getFileName()));
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+
+                return false;
+            }
+
+            private List<String> prepareDictionarySpinnerData(DictionaryManager manager) {
+                return manager.getUploadedDictionaryNames().isEmpty() ?
+                        Arrays.asList(getString(R.string.upload_dictionary_first)) :
+                        manager.getUploadedDictionaryNames();
+            }
+
+
+        }));
+        // onFirstRun();
     }
 
-    private boolean firstInit() {
+    private boolean onFirstRun() {
 
         //--check if first time
         SharedPreferences prefs = getPreferences(MODE_PRIVATE);
@@ -99,26 +173,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        runDictionaryManagerForTest();
         home();
-    }
-
-    private void runDictionaryManagerForTest() {
-        DictionaryDialog dialog = new DictionaryDialog();
-        dialog.show(getSupportFragmentManager(), DictionaryDialog.TAG);
     }
 
 
     public void home() {
-        MyWebView webView = findViewById(R.id.webView1);
+        MyWebView webView = findViewById(R.id.webView);
         WebSettings webSetting = webView.getSettings();
         webSetting.setBuiltInZoomControls(true);
         webSetting.setJavaScriptEnabled(true);
+        webView.setOnGetTranslationListener(new OnTranslateListener(){
 
+            @Override
+            public void translate(String src) {
+            String dst= wiwRepo.translate(src);
+            }
+        });
         webView.setWebViewClient(new MyWebViewClient());
         webView.loadUrl("https://www.onet.pl");
-
 
     }
 

@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey;
 public class Translation {
     @PrimaryKey(autoGenerate = true)
 
-    long id= 0;
+    long id = 0;
     public String src;
     public String dst;
 

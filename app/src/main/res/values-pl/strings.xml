@@ -2,8 +2,6 @@
 <resources>
     <string name="language_manager">Menadżer języków</string>
     <string name="settings">Ustawienia</string>
-    <string name="select_source">Wybierz język źródłowy</string>
-    <string name="select_dest">Wybierz język docelowy</string>
     <string name="upload_dict_btt">Pobierz wybrany słownik</string>
     <string name="loading">Wczytywanie... %1$s</string>
     <string name="done">zakończone</string>
@@ -11,4 +9,6 @@
     <string name="delete_dict_btt">Usuń słownik</string>
     <string name="from_language">Z języka</string>
     <string name="to_language">Na język</string>
+    <string name="source_language_first">Najpierw wybierz język źródłowy</string>
+    <string name="upload_dictionary_first">Pobierz najpierw słownik</string>
 </resources>

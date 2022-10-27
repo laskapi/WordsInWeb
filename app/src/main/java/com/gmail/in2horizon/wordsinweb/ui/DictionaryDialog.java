@@ -23,24 +23,20 @@ import com.gmail.in2horizon.wordsinweb.databinding.DictionaryDialogBinding;
 import com.gmail.in2horizon.wordsinweb.dictionarymanager.DictionaryManager;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Collections;
 
 
-public class DictionaryDialog extends DialogFragment implements
-        View.OnClickListener {
-
+public class DictionaryDialog extends DialogFragment {
 
     public static final String TAG = "DictionaryDialog";
-
 
     private String srcName, dstName;
     private DictionaryDialogBinding binding;
 
-
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-
 
         binding = DictionaryDialogBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
@@ -56,32 +52,6 @@ public class DictionaryDialog extends DialogFragment implements
                             }
                         });
 
-
-        List<String> initialSrcList = new ArrayList<>();
-        initialSrcList.add(getString(R.string.from_language));
-
-        List<String> initialDstList = new ArrayList<>();
-        initialDstList.add(getString(R.string.to_language));
-
-        ArrayAdapter<String> srcAdapter = new ArrayAdapter<>(getContext()
-                , android.R.layout.simple_spinner_item,
-                initialSrcList);
-        srcAdapter.setDropDownViewResource(android.R.layout
-                .simple_spinner_dropdown_item);
-        binding.srcSpinner.setAdapter(srcAdapter);
-
-
-        ArrayAdapter<String> dstAdapter = new ArrayAdapter<String>(getContext()
-                , android.R.layout.simple_spinner_item, initialDstList);
-        dstAdapter.setDropDownViewResource(android.R.layout
-                .simple_spinner_dropdown_item);
-        binding.dstSpinner.setAdapter(dstAdapter);
-
-        Button uploadBtt = view.findViewById(R.id.upload_dict_btt);
-        uploadBtt.setOnClickListener(this);
-        Button deleteBtt = view.findViewById(R.id.delete_dict_btt);
-        deleteBtt.setOnClickListener(this);
-
         Handler handler = new Handler(Looper.getMainLooper(), new DictionaryManagerCallback());
         if (DictionaryManager.build(getContext(), handler)) {
             binding.myProgressBar.show();
@@ -91,53 +61,47 @@ public class DictionaryDialog extends DialogFragment implements
     }
 
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.upload_dict_btt:
-                //uploadDictionary();
-                break;
-            case R.id.delete_dict_btt:
-                AlertDialog.Builder builder =
-                        new AlertDialog.Builder(getActivity())
-                                .setMessage(getString(R.string.delete_dictionary))
-                                .setPositiveButton(R.string.delete_dict_btt, (dialog, which) -> {
-
-                                });
-                builder.show();
-        }
-    }
-
-
     private class DictionaryManagerCallback implements Handler.Callback {
         private DictionaryManager manager;
         private String dictionary2Delete;
 
         @Override
         public boolean handleMessage(@NonNull Message msg) {
+
             manager = (DictionaryManager) msg.obj;
 
-            binding.myProgressBar.hide();
-            ArrayAdapter<String> adapter = (ArrayAdapter<String>) binding.srcSpinner.getAdapter();
-            ArrayList<String> srcNames = new ArrayList<>();
-            srcNames.add(adapter.getItem(0));
-            srcNames.addAll(manager.getAvailableDictionarySourceNames());
-            adapter.clear();
-            adapter.addAll(srcNames);
-            binding.srcSpinner.setAdapter(adapter);
+            SpinnerItemSelectedListener spinnerItemSelectedListener =
+                    new SpinnerItemSelectedListener(manager);
 
-            ItemSelectedLister itemSelectedLister = new ItemSelectedLister(manager);
-            binding.srcSpinner.setOnItemSelectedListener(itemSelectedLister);
-            binding.dstSpinner.setOnItemSelectedListener(itemSelectedLister);
+            ArrayList<String> srcNames =
+                    new ArrayList<>(manager.getAvailableDictionarySourceNames());
+            CenteredSpinnerAdapter<String> srcAdapter =
+                    new CenteredSpinnerAdapter<>(getContext()
+                            , android.R.layout.simple_spinner_item,
+                            srcNames);
+            srcAdapter.setDropDownViewResource(android.R.layout
+                    .simple_spinner_dropdown_item);
+            binding.srcSpinner.setAdapter(srcAdapter);
+            binding.srcSpinner.setOnItemSelectedListener(spinnerItemSelectedListener);
+
+            ArrayList<String> initialItem =
+                    new ArrayList<String>(Collections.singletonList(getString(R.string.loading)));
+            CenteredSpinnerAdapter<String> dstAdapter =
+                    new CenteredSpinnerAdapter<>(getContext()
+                            , android.R.layout.simple_spinner_item, initialItem);
+            dstAdapter.setDropDownViewResource(android.R.layout
+                    .simple_spinner_dropdown_item);
+            binding.dstSpinner.setAdapter(dstAdapter);
+            binding.dstSpinner.setOnItemSelectedListener(spinnerItemSelectedListener);
 
 
-            RecyclerView recycler = binding.installedRecycler;
-            recycler.setAdapter(new ItemAdapter(getContext(),
+            RecyclerView recycler = binding.uploadedDictionariesRecycler;
+            recycler.setAdapter(new RecyclerItemAdapter(getContext(),
                     manager.getUploadedDictionaryNames()));
             recycler.getAdapter().registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
                 @Override
                 public void onChanged() {
-                    int selected = ((ItemAdapter) recycler.getAdapter()).getSelected();
+                    int selected = ((RecyclerItemAdapter) recycler.getAdapter()).getSelected();
                     if (selected == -1) {
                         binding.deleteDictBtt.setEnabled(false);
                     } else {
@@ -154,21 +118,7 @@ public class DictionaryDialog extends DialogFragment implements
                     Handler handler = new Handler(Looper.getMainLooper(), msg -> {
                         binding.myProgressBar.setProgress(msg.obj);
                         if (msg.obj == null) {
-                            ItemAdapter itemAdapter =
-                                    (ItemAdapter) binding.installedRecycler.getAdapter();
-                            itemAdapter.setDataSet(manager.getUploadedDictionaryNames());
-                            itemAdapter.notifyDataSetChanged();
-
-                            ArrayAdapter<String> arrayAdapter =
-                                    (ArrayAdapter<String>) binding.srcSpinner.getAdapter();
-                            ArrayList<String> srcNames = new ArrayList<>();
-                            srcNames.add(arrayAdapter.getItem(0));
-                            srcNames.addAll(manager.getAvailableDictionarySourceNames());
-                            arrayAdapter.clear();
-                            arrayAdapter.addAll(srcNames);
-                            binding.srcSpinner.setAdapter(arrayAdapter);
-
-
+                            updateAvailableAndUploadedUiListComponents();
                         }
                         return true;
                     });
@@ -187,46 +137,62 @@ public class DictionaryDialog extends DialogFragment implements
                                     .setPositiveButton(android.R.string.ok,
                                             (dialog, which) -> {
                                                 if (manager.deleteDictionary(dictionary2Delete)) {
-
-                                                    ItemAdapter itemAdapter =
-                                                            (ItemAdapter) binding.installedRecycler.getAdapter();
-                                                        itemAdapter.deselect();
-                                                    itemAdapter.setDataSet(manager.getUploadedDictionaryNames());
-                                                    itemAdapter.notifyDataSetChanged();
+                                                    updateAvailableAndUploadedUiListComponents();
                                                 }
-
-                                            });
+                                            })
+                                    .setNegativeButton(android.R.string.cancel,
+                                            (dialog, which) -> dialog.dismiss());
                     builder.show();
 
                 }
             });
+
+            binding.myProgressBar.hide();
             return false;
         }
+
+        private void updateAvailableAndUploadedUiListComponents() {
+            RecyclerItemAdapter recyclerItemAdapter =
+                    (RecyclerItemAdapter) binding.uploadedDictionariesRecycler.getAdapter();
+            recyclerItemAdapter.setDataSet(manager.getUploadedDictionaryNames());
+            recyclerItemAdapter.notifyDataSetChanged();
+
+            ArrayList<String> srcNames =
+                    manager.getAvailableDictionarySourceNames();
+            CenteredSpinnerAdapter<String> arrayAdapter =
+                    (CenteredSpinnerAdapter<String>) binding.srcSpinner.getAdapter();
+            arrayAdapter.clear();
+            arrayAdapter.addAll(srcNames);
+            binding.srcSpinner.setAdapter(arrayAdapter);
+
+        }
+
     }
 
-    private class ItemSelectedLister implements AdapterView.OnItemSelectedListener {
+    private class SpinnerItemSelectedListener implements AdapterView.OnItemSelectedListener {
 
-        private DictionaryManager manager;
+        private final DictionaryManager manager;
 
-        public ItemSelectedLister(DictionaryManager manager) {
+        public SpinnerItemSelectedListener(DictionaryManager manager) {
             this.manager = manager;
         }
 
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
             String value = (String) parent.getAdapter().getItem(position);
-            Log.d(TAG, "" + parent.getId() + "::" + R.id.src_spinner + "::" + value);
+
             switch (parent.getId()) {
                 case R.id.src_spinner: {
 
-                    ArrayAdapter<String> adapter = (ArrayAdapter) binding.dstSpinner.getAdapter();
-                    ArrayList<String> dstNames = new ArrayList<>();
-                    dstNames.add(adapter.getItem(0));
-                    dstNames.addAll(manager.getAvailableDictionaryDstNames(value));
-                    adapter.clear();
-                    adapter.addAll(dstNames);
-                    binding.dstSpinner.setAdapter(adapter);
+                    ArrayList<String> dstNames = manager.getAvailableDictionaryDstNames(value);
+                    CenteredSpinnerAdapter<String> dstAdapter =
+                            (CenteredSpinnerAdapter<String>) binding.dstSpinner.getAdapter();
+                    dstAdapter.clear();
+                    dstAdapter.addAll(dstNames);
+                    binding.dstSpinner.setAdapter(dstAdapter);
                     srcName = value;
+
                     break;
                 }
                 case R.id.dst_spinner: {
