@@ -87,8 +87,8 @@ public class MyWebView extends WebView {
                     @Override
                     public void onReceiveValue(String text) {
                         if (!text.isEmpty()) {
+                            text=text.replace("\"","");
                             onTranslateListener.translate(text);
-                            Log.d(TAG, "Webview selected text: " + text);
                             //translate(text);
                         }
                     }

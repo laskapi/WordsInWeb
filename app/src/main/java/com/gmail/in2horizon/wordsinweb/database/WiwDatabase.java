@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 @androidx.room.Database(version = 1, entities = {Translation.class},exportSchema = true)
 public abstract class WiwDatabase extends RoomDatabase {
 
-    static final ExecutorService executor =
+    public static final ExecutorService executor =
             Executors.newSingleThreadExecutor();
 
 

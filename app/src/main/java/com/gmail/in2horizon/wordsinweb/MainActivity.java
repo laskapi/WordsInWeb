@@ -2,6 +2,7 @@ package com.gmail.in2horizon.wordsinweb;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,9 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 
-import com.gmail.in2horizon.wordsinweb.database.WiwRepo;
+
 import com.gmail.in2horizon.wordsinweb.databinding.ActivityMainBinding;
 import com.gmail.in2horizon.wordsinweb.dictionarymanager.Dictionary;
 import com.gmail.in2horizon.wordsinweb.dictionarymanager.DictionaryManager;
@@ -27,13 +27,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private ActivityMainBinding binding;
-    private WiwRepo wiwRepo;
+
+    private TransitionsMainViewModel mainViewModel;
 
 
     @Override
@@ -43,11 +43,25 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        mainViewModel = new ViewModelProvider(this).get(TransitionsMainViewModel.class);
+
+        mainViewModel.getTranslation().observe(this,
+                dst -> {
+
+                    if (dst != null && !dst.isEmpty()) {
+                        Log.d(TAG, "jestem");
+                        binding.translationTextview.setText(dst.get(0));
+                    }
+
+                });
+
+
         DictionaryManager.build(this, new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message msg) {
 
                 DictionaryManager manager = (DictionaryManager) msg.obj;
+
                 List<String> items = prepareDictionarySpinnerData(manager);
 
                 CenteredSpinnerObserverAdapter<String> adapter =
@@ -58,25 +72,26 @@ public class MainActivity extends AppCompatActivity {
                             public void update(Observable manager, Object arg) {
                                 clear();
                                 addAll(prepareDictionarySpinnerData((DictionaryManager) manager));
-                                ((ArrayAdapter) binding.dictionariesSpinner.getAdapter())
-                                        .notifyDataSetChanged();
+                                notifyDataSetChanged();
                             }
                         };
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 manager.addObserver(adapter);
 
                 binding.dictionariesSpinner.setAdapter(adapter);
+
                 binding.dictionariesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position,
                                                long id) {
                         String name = (String) parent.getAdapter().getItem(position);
 
-                        Optional<Dictionary> dictionary = manager.getUploadedDictionary4name(name);
+                        Optional<Dictionary> optDictionary =
+                                manager.getUploadedDictionary4name(name);
 
-                        dictionary.ifPresent(value ->
-                                wiwRepo=WiwRepo.getInstance(getApplicationContext(),
-                                value.getFileName()));
+                        optDictionary.ifPresent(dictionary ->
+                                mainViewModel.setDictionary(getApplicationContext(),
+                                        dictionary.getFileName()));
                     }
 
                     @Override
@@ -96,52 +111,32 @@ public class MainActivity extends AppCompatActivity {
 
 
         }));
-        // onFirstRun();
     }
 
-    private boolean onFirstRun() {
-
-        //--check if first time
-        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
-        String key = getString(R.string.app_name);
-        if (prefs.contains(key)) {
-            //        return false;
-        }
-        prefs.edit().putBoolean(key, true).apply();
-//        dbInit();
-
-        //     loadList();
-        return true;
+    @Override
+    protected void onStart() {
+        super.onStart();
+        home();
     }
 
 
-    private void dbInit() {
+    public void home() {
+        MyWebView webView = findViewById(R.id.webView);
+        WebSettings webSetting = webView.getSettings();
+        webSetting.setBuiltInZoomControls(true);
+        webSetting.setJavaScriptEnabled(true);
+        webView.setOnGetTranslationListener(new OnTranslateListener() {
 
-   /*     WiwDatabase db = Room.databaseBuilder(getApplicationContext(),
-                WiwDatabase.class, "languages")
-                .createFromAsset("db/3.sqlite3")
-                .build();
-        TranslationDao td=db.translationDao();
-        AsyncTask.execute(()->{
-            Translation result=td.translate("work");
-            Log.i(TAG,result.pl);
+            @Override
+            public void translate(String src) {
+                mainViewModel.setSourceWord(src);
 
-        });*/
-
-        /*
-    BufferedInputStream is= new BufferedInputStream(getResources().openRawResource(R.raw.isolang));
-        InputStreamReader isr= new InputStreamReader(is);
-    BufferedReader br=new BufferedReader(isr);
-    br.lines().map(x->new Language(x))
-        try {
-            Log.d(TAG,br.readLine());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-*/
+            }
+        });
+        webView.setWebViewClient(new MyWebViewClient());
+        webView.loadUrl("https://www.onet.pl");
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -170,28 +165,5 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        home();
-    }
-
-
-    public void home() {
-        MyWebView webView = findViewById(R.id.webView);
-        WebSettings webSetting = webView.getSettings();
-        webSetting.setBuiltInZoomControls(true);
-        webSetting.setJavaScriptEnabled(true);
-        webView.setOnGetTranslationListener(new OnTranslateListener(){
-
-            @Override
-            public void translate(String src) {
-            String dst= wiwRepo.translate(src);
-            }
-        });
-        webView.setWebViewClient(new MyWebViewClient());
-        webView.loadUrl("https://www.onet.pl");
-
-    }
 
 }

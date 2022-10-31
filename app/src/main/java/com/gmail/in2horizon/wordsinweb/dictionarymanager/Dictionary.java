@@ -38,7 +38,8 @@ public class Dictionary {
         }
         dstName = isoToName.get(dstIso);
         if (dstName == null) {
-            dstName = new Locale(dstIso).getDisplayLanguage();
+            Locale locale=new Locale(dstIso);
+            dstName = locale.getDisplayLanguage();
             isoToName.put(dstIso, dstName);
         }
 
