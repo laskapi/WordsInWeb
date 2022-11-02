@@ -31,19 +31,14 @@ public class MyWebView extends WebView {
         super(context, attrs, defStyleAttr);
     }
 
-    public MyWebView(@NonNull Context context, @Nullable AttributeSet attrs,
-                     int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-    }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         Log.d(TAG, e.toString());
-        getSelection();
+        if (e.getAction() == MotionEvent.ACTION_UP) {
+            getSelection();
+        }
         /*
-
-
         if (e.getAction() == MotionEvent.ACTION_DOWN) {
             long touchTime = e.getEventTime() - e.getDownTime();
             if (touchTime < 1000) {
@@ -86,10 +81,11 @@ public class MyWebView extends WebView {
                 new ValueCallback<String>() {
                     @Override
                     public void onReceiveValue(String text) {
-                        if (!text.isEmpty()) {
-                            text=text.replace("\"","");
+                        text = text.replace("\"", "");
+                        if (text.isEmpty() || text.contains(" ")) {
+                            return;
+                        } else {
                             onTranslateListener.translate(text);
-                            //translate(text);
                         }
                     }
                 });
@@ -196,7 +192,7 @@ Log.d("Success",
 
     @Override
     protected void finalize() throws Throwable {
-        onTranslateListener=null;
+        onTranslateListener = null;
         super.finalize();
     }
 }

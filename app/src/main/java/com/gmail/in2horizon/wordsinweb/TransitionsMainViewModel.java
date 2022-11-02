@@ -1,6 +1,7 @@
 package com.gmail.in2horizon.wordsinweb;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -18,22 +19,35 @@ public class TransitionsMainViewModel extends ViewModel {
     private static final String TAG = TransitionsMainViewModel.class.getSimpleName();
 
     private WiwDatabase database;
-    private final MutableLiveData<TranslationDao> dao =new MutableLiveData<TranslationDao>();
-    private final MutableLiveData<String> sourceWord = new MutableLiveData<String>();
-    private final LiveData<List<String>> translation = Transformations.switchMap(sourceWord,
-            word -> dao.getValue().translate(word));
+    private final MutableLiveData<String> searchText= new MutableLiveData<>();
+
+    private final MutableLiveData<TranslationDao> dao = new MutableLiveData<>();
+    private final MutableLiveData<String> sourceWord = new MutableLiveData<>();
+    private final LiveData<String> translation = Transformations.switchMap(sourceWord,
+            word -> {
+                String wildcardWord = "%" + word + "%";
+                return dao.getValue().translate(wildcardWord);
+            });
 
 
-
-    public void setSourceWord(String word) {
-
-        String wildcardWord="%"+word+"%";
-
-        this.sourceWord.setValue(wildcardWord);
+    public void setSearchText(String searchText) {
+        this.searchText.setValue(searchText);
+    }
+    public LiveData<String> getSearchText(){
+        return  searchText;
     }
 
-    public void setDictionary(Context context, String dictionaryFilename) {
+    public void setSourceWord(String word) {
+        this.sourceWord.setValue(word);
+    }
 
+    public LiveData<String> getSourceWord() {
+        return sourceWord;
+    }
+
+    public LiveData<String> getTranslation() {return translation; }
+
+    public void setDictionary(Context context, String dictionaryFilename) {
         if (database != null) {
             String actualDatabaseFilename = database.getOpenHelper().getDatabaseName();
             if (actualDatabaseFilename == dictionaryFilename) {
@@ -43,12 +57,6 @@ public class TransitionsMainViewModel extends ViewModel {
         }
         database = Room.databaseBuilder(context, WiwDatabase.class, dictionaryFilename).build();
         dao.setValue(database.getTranslationDao());
-
-    }
-
-
-    public LiveData<List<String>> getTranslation() {
-        return translation;
     }
 
     @Override

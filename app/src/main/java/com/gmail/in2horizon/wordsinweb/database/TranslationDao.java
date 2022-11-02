@@ -12,7 +12,7 @@ import java.util.List;
 public interface TranslationDao {
 
     @Query("SELECT dst FROM Translation WHERE src LIKE :source LIMIT 1 ")
-    LiveData<List<String>> translate(String source);
+    LiveData<String> translate(String source);
 
 
     @Insert

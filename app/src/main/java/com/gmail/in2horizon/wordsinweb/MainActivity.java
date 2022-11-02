@@ -4,15 +4,16 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebSettings;
 import android.widget.AdapterView;
 
@@ -31,10 +32,10 @@ import java.util.Optional;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    private static final String BASE_URL = "https://www.google.com/search?q=";
     private ActivityMainBinding binding;
-
-    private TransitionsMainViewModel mainViewModel;
-
+    private TransitionsMainViewModel viewModel;
+    private String query;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,25 +44,43 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        mainViewModel = new ViewModelProvider(this).get(TransitionsMainViewModel.class);
+        binding.searchEdittext.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                binding.searchButton.performClick();
+                return true;
+            }
+            return false;
+        });
 
-        mainViewModel.getTranslation().observe(this,
+        binding.searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeSoftInput(binding.searchEdittext);
+                query = binding.searchEdittext.getText().toString();
+                String url = BASE_URL + query;
+                binding.webView.loadUrl(url);
+
+            }
+        });
+
+        viewModel = new ViewModelProvider(this).get(TransitionsMainViewModel.class);
+        viewModel.getTranslation().observe(this,
                 dst -> {
-
-                    if (dst != null && !dst.isEmpty()) {
-                        Log.d(TAG, "jestem");
-                        binding.translationTextview.setText(dst.get(0));
+                    if (dst == null || dst.isEmpty()) {
+                        return;
                     }
+                    dst.replace("|", "\n");
+                    binding.dstTextview.setText(dst);
 
-                });
-
+           edw     });
+        viewModel.getSourceWord().observe((this), src -> binding.srcTextview.setText(src));
+        viewModel.getSearchText().observe(this, search -> binding.searchEdittext.setText(search));
 
         DictionaryManager.build(this, new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message msg) {
 
                 DictionaryManager manager = (DictionaryManager) msg.obj;
-
                 List<String> items = prepareDictionarySpinnerData(manager);
 
                 CenteredSpinnerObserverAdapter<String> adapter =
@@ -79,24 +98,21 @@ public class MainActivity extends AppCompatActivity {
                 manager.addObserver(adapter);
 
                 binding.dictionariesSpinner.setAdapter(adapter);
-
                 binding.dictionariesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position,
                                                long id) {
                         String name = (String) parent.getAdapter().getItem(position);
-
                         Optional<Dictionary> optDictionary =
                                 manager.getUploadedDictionary4name(name);
 
                         optDictionary.ifPresent(dictionary ->
-                                mainViewModel.setDictionary(getApplicationContext(),
+                                viewModel.setDictionary(getApplicationContext(),
                                         dictionary.getFileName()));
                     }
 
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {
-
                     }
                 });
 
@@ -108,20 +124,19 @@ public class MainActivity extends AppCompatActivity {
                         Arrays.asList(getString(R.string.upload_dictionary_first)) :
                         manager.getUploadedDictionaryNames();
             }
-
-
         }));
+    }
+
+    private void closeSoftInput(View host) {
+        InputMethodManager imm = (InputMethodManager)
+                getSystemService(INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(host.getWindowToken(), 0);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        home();
-    }
-
-
-    public void home() {
-        MyWebView webView = findViewById(R.id.webView);
+        MyWebView webView = binding.webView;
         WebSettings webSetting = webView.getSettings();
         webSetting.setBuiltInZoomControls(true);
         webSetting.setJavaScriptEnabled(true);
@@ -129,12 +144,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void translate(String src) {
-                mainViewModel.setSourceWord(src);
+                viewModel.setSourceWord(src);
 
             }
         });
-        webView.setWebViewClient(new MyWebViewClient());
-        webView.loadUrl("https://www.onet.pl");
+        webView.setWebViewClient(new MyWebViewClient(viewModel));
+        webView.loadUrl("https://google.com");
 
     }
 
@@ -164,6 +179,5 @@ public class MainActivity extends AppCompatActivity {
         return true;
 
     }
-
 
 }

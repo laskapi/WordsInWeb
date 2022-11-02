@@ -13,6 +13,7 @@ import androidx.room.Room;
 import com.gmail.in2horizon.wordsinweb.database.TranslationDao;
 import com.gmail.in2horizon.wordsinweb.database.WiwDatabase;
 
+import java.net.HttpCookie;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -21,12 +22,13 @@ public class MainViewModel extends ViewModel {
 
     private static final String TAG = MainViewModel.class.getSimpleName();
 
+
     private WiwDatabase database;
 
     private MutableLiveData<TranslationDao> dao = new MediatorLiveData<>();
     private MutableLiveData<String> sourceWord = new MutableLiveData<>();
 
-    private MediatorLiveData<List<String>> liveData = new MediatorLiveData<>();
+    private MediatorLiveData<String> liveData = new MediatorLiveData<>();
 
 //    private LiveData<List<String>> liveData = Transformations.switchMap(word,
     //           w -> dao.translate(w));
@@ -36,7 +38,7 @@ public class MainViewModel extends ViewModel {
         super();
         liveData.addSource(dao,
                 d -> {
-                    Future<LiveData<List<String>>> f =
+                    Future<LiveData<String>> f =
                             WiwDatabase.executor.submit(
                                     () -> d.translate(sourceWord.getValue()));
                     try {
@@ -106,7 +108,7 @@ public class MainViewModel extends ViewModel {
     }
 
 
-    public LiveData<List<String>> getTranslation() {
+    public LiveData<String> getTranslation() {
         Log.d(TAG, "::" + (dao == null));
         return liveData;
 

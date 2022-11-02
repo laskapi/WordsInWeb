@@ -11,4 +11,5 @@
     <string name="to_language">Na język</string>
     <string name="source_language_first">Najpierw wybierz język źródłowy</string>
     <string name="upload_dictionary_first">Pobierz najpierw słownik</string>
+    <string name="search">Szukaj</string>
 </resources>
