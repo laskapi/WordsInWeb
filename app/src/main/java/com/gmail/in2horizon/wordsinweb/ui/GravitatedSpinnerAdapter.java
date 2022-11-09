@@ -11,12 +11,10 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
-public class CenteredSpinnerAdapter<T> extends ArrayAdapter<T>  {
+public class GravitatedSpinnerAdapter<T> extends ArrayAdapter<T>  {
 
-    public CenteredSpinnerAdapter(@NonNull Context context, int resource, @NonNull List<T> objects) {
+    public GravitatedSpinnerAdapter(@NonNull Context context, int resource, @NonNull List<T> objects) {
 
 
         super(context, resource, new ArrayList<T>(objects));
@@ -25,19 +23,21 @@ public class CenteredSpinnerAdapter<T> extends ArrayAdapter<T>  {
     @Override
     public View getView(int position, View convertView, ViewGroup parent)
     {
-        return setCentered(super.getView(position, convertView, parent));
+        return setGravity(super.getView(position, convertView, parent));
     }
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent)
     {
-        return setCentered(super.getDropDownView(position, convertView, parent));
+        return setGravity(super.getDropDownView(position, convertView, parent));
     }
 
 
-    private View setCentered(View view)
+    private View setGravity(View view)
     {
+        view.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         TextView textView = (TextView)view.findViewById(android.R.id.text1);
+        textView.setPadding(5, 5, 5, 5);
         textView.setGravity(Gravity.CENTER);
         return view;
     }

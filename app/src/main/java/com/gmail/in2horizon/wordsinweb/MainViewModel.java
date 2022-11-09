@@ -1,89 +1,57 @@
 package com.gmail.in2horizon.wordsinweb;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.viewmodel.ViewModelInitializer;
 import androidx.room.Room;
 
 import com.gmail.in2horizon.wordsinweb.database.TranslationDao;
 import com.gmail.in2horizon.wordsinweb.database.WiwDatabase;
-
-import java.net.HttpCookie;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import com.gmail.in2horizon.wordsinweb.dictionarymanager.DictionaryManager;
 
 public class MainViewModel extends ViewModel {
 
     private static final String TAG = MainViewModel.class.getSimpleName();
 
-
     private WiwDatabase database;
+    private final MutableLiveData<String> searchText= new MutableLiveData<>();
 
-    private MutableLiveData<TranslationDao> dao = new MediatorLiveData<>();
-    private MutableLiveData<String> sourceWord = new MutableLiveData<>();
+    private final MutableLiveData<TranslationDao> dao = new MutableLiveData<>();
+    private final MutableLiveData<String> sourceWord = new MutableLiveData<>();
+    private final LiveData<String> translation = Transformations.switchMap(sourceWord,
+            word -> {
+                String wildcardWord = "%" + word + "%";
+                return dao.getValue().translate(wildcardWord);
+            });
 
-    private MediatorLiveData<String> liveData = new MediatorLiveData<>();
+    private final MutableLiveData<DictionaryManager> manager= new MutableLiveData<>();
 
-//    private LiveData<List<String>> liveData = Transformations.switchMap(word,
-    //           w -> dao.translate(w));
-
-
-    MainViewModel() {
-        super();
-        liveData.addSource(dao,
-                d -> {
-                    Future<LiveData<String>> f =
-                            WiwDatabase.executor.submit(
-                                    () -> d.translate(sourceWord.getValue()));
-                    try {
-                        liveData.setValue(f.get().getValue());
-                    } catch (ExecutionException | InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-        liveData.addSource(sourceWord,
-                word -> {
-                    if ((this.sourceWord.getValue() != null) && (dao.getValue() != null)) {
-                      WiwDatabase.executor.execute(()->{
-/*
-                         List<String> result=
-                                 database.getTranslationDao().translate(word.getValue());
-                         Log.d(TAG,"result list::"+result);
-*/
-                            String wildcardWord="%"+word+"%";
-                          Log.d(TAG, "test" +word+"::"+ dao.getValue().translate(wildcardWord));
-
-                      });
-
-                        /*  Future<List<String>> f =
-                                WiwDatabase.executor.submit(
-                                        () -> dao.getValue().translate(word.getValue()));
-                        try {
-                            Log.d(TAG, "live" + "::" + f.get());
-                            liveData.setValue(f.get());
-                        } catch (ExecutionException | InterruptedException e) {
-                            e.printStackTrace();
-                        }*/
-
-                    }
-
-                });
+    public MutableLiveData<DictionaryManager> getManager() {
+        return manager;
+    }
+    public void setManager(DictionaryManager manager){
+        this.manager.setValue(manager);
     }
 
-    public void setSourceWord(String src) {
-        Log.d(TAG, src + "::" + (dao == null));
-        this.sourceWord.setValue(src);
+
+    public void setSearchText(String searchText) {
+        this.searchText.setValue(searchText);
     }
+
+    public LiveData<String> getSearchText(){
+        return  searchText;
+    }
+
+    public void setSourceWord(String word) {
+        this.sourceWord.setValue(word);
+    }
+
+    public LiveData<String> getTranslation() {return translation; }
 
     public void setDictionary(Context context, String dictionaryFilename) {
-
         if (database != null) {
             String actualDatabaseFilename = database.getOpenHelper().getDatabaseName();
             if (actualDatabaseFilename == dictionaryFilename) {
@@ -91,35 +59,14 @@ public class MainViewModel extends ViewModel {
             }
             database.close();
         }
-
         database = Room.databaseBuilder(context, WiwDatabase.class, dictionaryFilename).build();
         dao.setValue(database.getTranslationDao());
-        WiwDatabase.executor.execute(() ->
-                {
-//                    Log.d(TAG, "test" + database.getTranslationDao().translate("oko"));
-
-     /*               Cursor c = database.query(new SimpleSQLiteQuery("select count(*) from " +
-                            "Translation"));
-                    c.moveToFirst();
-                    Log.d(TAG, "count" + c.getString(0));
-    */            }
-
-        );
     }
 
-
-    public LiveData<String> getTranslation() {
-        Log.d(TAG, "::" + (dao == null));
-        return liveData;
-
+    public boolean isDaoReady() {
+        return dao.getValue()!=null;
     }
 
-    static final ViewModelInitializer<MainViewModel> initializer = new ViewModelInitializer<>(
-            MainViewModel.class,
-            creationExtras -> {
-                return new MainViewModel();
-            }
-    );
 
 
     @Override

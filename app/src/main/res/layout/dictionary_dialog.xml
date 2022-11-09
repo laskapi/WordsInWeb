@@ -3,91 +3,174 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:theme="@style/Theme.WordsInWeb">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.1" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.9" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="from_language,to_language" />
+
+
+    <TextView
+        android:id="@+id/dictionary_dialog_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/default_padding"
+        android:background="@color/background_dark"
+        android:gravity="center"
+        android:paddingVertical="@dimen/default_padding"
+        android:text="@string/language_manager"
+        android:textSize="@dimen/title_text_size"
+        app:layout_constraintBottom_toTopOf="@id/select_dictionaries_to_upload"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/select_dictionaries_to_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="@dimen/default_padding"
+        android:text="@string/select_dictionaries_to_upload"
+        app:layout_constraintBottom_toTopOf="@id/from_language"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dictionary_dialog_title"
+
+
+        />
 
     <TextView
         android:id="@+id/from_language"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/default_padding"
         android:text="@string/from_language"
-        app:layout_constraintBottom_toTopOf="@+id/dst_spinner"
-        app:layout_constraintEnd_toStartOf="@id/src_spinner"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toTopOf="@id/to_language"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@id/guideline_left"
+        app:layout_constraintTop_toBottomOf="@id/select_dictionaries_to_upload" />
 
     <Spinner
         android:id="@+id/src_spinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:background="@color/design_default_color_secondary"
-        android:gravity="center_horizontal"
+        android:layout_margin="@dimen/default_padding"
+        android:background="@drawable/underline"
         android:spinnerMode="dropdown"
-        app:layout_constraintBottom_toTopOf="@+id/dst_spinner"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@id/from_language"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toBottomOf="@id/from_language"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/barrier_left"
+        app:layout_constraintTop_toTopOf="@id/from_language" />
+
 
     <TextView
         android:id="@+id/to_language"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/from_language"
-
-        app:layout_constraintBottom_toTopOf="@+id/upload_dict_btt"
-        app:layout_constraintEnd_toStartOf="@id/dst_spinner"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/src_spinner" />
+        android:layout_margin="@dimen/default_padding"
+        android:text="@string/to_language"
+        app:layout_constraintBottom_toTopOf="@id/upload_dict_btt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@id/guideline_left"
+        app:layout_constraintTop_toBottomOf="@id/from_language" />
 
     <Spinner
         android:id="@+id/dst_spinner"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:background="@color/design_default_color_secondary"
-        android:gravity="center_horizontal"
-
+        android:layout_margin="@dimen/default_padding"
+        android:background="@drawable/underline"
         android:spinnerMode="dropdown"
-        app:layout_constraintBottom_toTopOf="@id/upload_dict_btt"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@id/to_language"
-        app:layout_constraintTop_toBottomOf="@+id/src_spinner" />
+        android:textSize="@dimen/primary_text_size"
+        app:layout_constraintBottom_toBottomOf="@id/to_language"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/barrier_left"
+        app:layout_constraintTop_toTopOf="@id/to_language" />
 
     <Button
         android:id="@+id/upload_dict_btt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/default_padding"
         android:text="@string/upload_dict_btt"
+        app:layout_constraintBottom_toTopOf="@id/uploaded_dictionaries"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/to_language" />
+
+    <TextView
+        android:id="@+id/uploaded_dictionaries"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/default_padding"
+        android:text="@string/uploaded_dictionaries"
+        app:layout_constraintBottom_toTopOf="@id/you_have_to_upload"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/upload_dict_btt"
+
+        />
+
+    <TextView
+        android:id="@+id/you_have_to_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/default_padding"
+        android:text="@string/you_have_to_upload"
+        android:textAlignment="center"
+        android:textColor="@color/design_default_color_error"
         app:layout_constraintBottom_toTopOf="@id/uploaded_dictionaries_recycler"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dst_spinner" />
-
+        app:layout_constraintTop_toBottomOf="@id/uploaded_dictionaries" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/uploaded_dictionaries_recycler"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/default_padding"
         android:scrollbars="vertical"
         app:layoutManager="LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/delete_dict_btt"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/upload_dict_btt" />
+        app:layout_constraintTop_toBottomOf="@id/you_have_to_upload" />
 
     <Button
         android:id="@+id/delete_dict_btt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/default_padding"
         android:enabled="false"
         android:text="@string/delete_dict_btt"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/guideline_right"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/uploaded_dictionaries_recycler" />
 
@@ -101,7 +184,9 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.157" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

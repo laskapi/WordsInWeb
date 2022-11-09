@@ -2,14 +2,19 @@
 <resources>
     <string name="language_manager">Menadżer języków</string>
     <string name="settings">Ustawienia</string>
-    <string name="upload_dict_btt">Pobierz wybrany słownik</string>
+    <string name="upload_dict_btt">Pobierz</string>
     <string name="loading">Wczytywanie... %1$s</string>
     <string name="done">zakończone</string>
     <string name="delete_dictionary">Usunąć słownik?</string>
     <string name="delete_dict_btt">Usuń słownik</string>
-    <string name="from_language">Z języka</string>
-    <string name="to_language">Na język</string>
+    <string name="from_language">Z :</string>
+    <string name="to_language">Na:</string>
     <string name="source_language_first">Najpierw wybierz język źródłowy</string>
     <string name="upload_dictionary_first">Pobierz najpierw słownik</string>
     <string name="search">Szukaj</string>
+    <string name="no_translation">Brak tłumaczenia</string>
+    <string name="select_dictionaries_to_upload">Wybierz słowniki do pobrania:</string>
+    <string name="you_have_to_upload">Musisz pobrać przynajmniej jeden słownik</string>
+    <string name="uploaded_dictionaries">Pobrane słowniki:</string>
+    <string name="close">Zamknij</string>
 </resources>

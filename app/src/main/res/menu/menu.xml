@@ -11,6 +11,17 @@
         android:orderInCategory="2"
         android:title="@string/language_manager"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/dictionaries_spinner"
+        
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:spinnerMode="dropdown"
+        android:textColor="@color/black"
+        android:title="@string/dictionaries_spinner"
+        app:actionViewClass="android.widget.Spinner"
+        app:showAsAction="always" />
 
 
 </menu>

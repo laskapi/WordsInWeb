@@ -4,13 +4,11 @@ import android.graphics.Bitmap;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import androidx.lifecycle.ViewModel;
-
 public class MyWebViewClient extends WebViewClient {
 
-    private final TransitionsMainViewModel viewModel;
+    private final MainViewModel viewModel;
 
-    MyWebViewClient(TransitionsMainViewModel viewModel){
+    MyWebViewClient(MainViewModel viewModel){
         this.viewModel=viewModel;
     }
 

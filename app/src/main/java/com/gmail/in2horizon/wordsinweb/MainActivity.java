@@ -16,13 +16,14 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebSettings;
 import android.widget.AdapterView;
+import android.widget.Spinner;
 
 
 import com.gmail.in2horizon.wordsinweb.databinding.ActivityMainBinding;
 import com.gmail.in2horizon.wordsinweb.dictionarymanager.Dictionary;
 import com.gmail.in2horizon.wordsinweb.dictionarymanager.DictionaryManager;
 import com.gmail.in2horizon.wordsinweb.ui.DictionaryDialog;
-import com.gmail.in2horizon.wordsinweb.ui.CenteredSpinnerObserverAdapter;
+import com.gmail.in2horizon.wordsinweb.ui.SpinnerObserverAdapter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,13 +35,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final String BASE_URL = "https://www.google.com/search?q=";
     private ActivityMainBinding binding;
-    private TransitionsMainViewModel viewModel;
+    private MainViewModel viewModel;
     private String query;
+    private Menu myMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -63,42 +64,50 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        viewModel = new ViewModelProvider(this).get(TransitionsMainViewModel.class);
+        viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         viewModel.getTranslation().observe(this,
                 dst -> {
                     if (dst == null || dst.isEmpty()) {
-                        return;
+                        dst = getString(R.string.no_translation);
                     }
-                    dst.replace("|", "\n");
+
+                    dst = dst.replace("|", "\n");
                     binding.dstTextview.setText(dst);
 
-           edw     });
-        viewModel.getSourceWord().observe((this), src -> binding.srcTextview.setText(src));
+                });
         viewModel.getSearchText().observe(this, search -> binding.searchEdittext.setText(search));
 
         DictionaryManager.build(this, new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(@NonNull Message msg) {
-
                 DictionaryManager manager = (DictionaryManager) msg.obj;
-                List<String> items = prepareDictionarySpinnerData(manager);
+                viewModel.setManager(manager);
+                if(manager.getUploadedDictionaryNames().isEmpty()){
+                    DictionaryDialog dialog = new DictionaryDialog();
+                    dialog.show(getSupportFragmentManager(), DictionaryDialog.TAG);
 
-                CenteredSpinnerObserverAdapter<String> adapter =
-                        new CenteredSpinnerObserverAdapter<String>(MainActivity.this,
+                }
+                List<String> items = prepareDictionarySpinnerData(manager);
+                SpinnerObserverAdapter<String> adapter =
+                        new SpinnerObserverAdapter<String>(MainActivity.this,
                                 android.R.layout.simple_spinner_item, items) {
 
                             @Override
                             public void update(Observable manager, Object arg) {
+                                Log.d(TAG,"changed");
                                 clear();
                                 addAll(prepareDictionarySpinnerData((DictionaryManager) manager));
                                 notifyDataSetChanged();
+
                             }
                         };
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 manager.addObserver(adapter);
 
-                binding.dictionariesSpinner.setAdapter(adapter);
-                binding.dictionariesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                Spinner dictionariesSpinner=
+                        (Spinner) myMenu.findItem(R.id.dictionaries_spinner).getActionView();
+                dictionariesSpinner.setAdapter(adapter);
+                dictionariesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> parent, View view, int position,
                                                long id) {
@@ -144,12 +153,16 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void translate(String src) {
-                viewModel.setSourceWord(src);
-
+                binding.srcTextview.setText(src);
+                if (viewModel.isDaoReady()) {
+                    viewModel.setSourceWord(src);
+                } else {
+                    binding.dstTextview.setText(R.string.upload_dictionary_first);
+                }
             }
         });
         webView.setWebViewClient(new MyWebViewClient(viewModel));
-        webView.loadUrl("https://google.com");
+        webView.loadUrl(BASE_URL + "");
 
     }
 
@@ -157,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
+        myMenu=menu;
         return true;
     }
 
@@ -179,5 +193,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
 
     }
+
 
 }

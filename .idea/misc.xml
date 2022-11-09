@@ -4,7 +4,10 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.2465" />
+        <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable-xxhdpi/background.xml" value="0.1" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable/background.xml" value="0.2265" />
+        <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+        <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable/underline.xml" value="0.2265" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/dictionaries_manager.xml" value="0.25" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/dictionary_dialog.xml" value="0.25" />

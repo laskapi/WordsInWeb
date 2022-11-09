@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,14 +24,17 @@ import com.gmail.in2horizon.wordsinweb.dictionarymanager.DictionaryManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Observable;
+import java.util.Observer;
 
 
-public class DictionaryDialog extends DialogFragment {
+public class DictionaryDialog extends DialogFragment implements Observer {
 
     public static final String TAG = "DictionaryDialog";
 
     private String srcName, dstName;
     private DictionaryDialogBinding binding;
+    private AlertDialog dialog;
 
     @NonNull
     @Override
@@ -42,24 +44,45 @@ public class DictionaryDialog extends DialogFragment {
         View view = binding.getRoot();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.language_manager)
-                .setView(view)
-                .setPositiveButton(android.R.string.ok,
+        builder.setView(view)
+                .setPositiveButton(R.string.close,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Log.d(TAG, "button OK");
                             }
-                        });
+                        })
+                .setCancelable(false);
 
         Handler handler = new Handler(Looper.getMainLooper(), new DictionaryManagerCallback());
         if (DictionaryManager.build(getContext(), handler)) {
             binding.myProgressBar.show();
         }
-
-        return builder.create();
+        dialog = builder.create();
+        return dialog;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        dialog.getButton(Dialog.BUTTON_POSITIVE).setEnabled(false);
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        DictionaryManager manager = (DictionaryManager) o;
+        if (manager.getUploadedDictionaryNames().isEmpty()) {
+
+            dialog.getButton(Dialog.BUTTON_POSITIVE).setEnabled(false);
+            binding.deleteDictBtt.setVisibility(View.INVISIBLE);
+            binding.youHaveToUpload.setVisibility(View.VISIBLE);
+        } else {
+            dialog.getButton(Dialog.BUTTON_POSITIVE).setEnabled(true);
+            binding.deleteDictBtt.setVisibility(View.VISIBLE);
+            binding.youHaveToUpload.setVisibility(View.GONE);
+
+        }
+    }
 
     private class DictionaryManagerCallback implements Handler.Callback {
         private DictionaryManager manager;
@@ -69,14 +92,15 @@ public class DictionaryDialog extends DialogFragment {
         public boolean handleMessage(@NonNull Message msg) {
 
             manager = (DictionaryManager) msg.obj;
-
+            manager.addObserver(DictionaryDialog.this);
+            update(manager, null);
             SpinnerItemSelectedListener spinnerItemSelectedListener =
                     new SpinnerItemSelectedListener(manager);
 
             ArrayList<String> srcNames =
                     new ArrayList<>(manager.getAvailableDictionarySourceNames());
-            CenteredSpinnerAdapter<String> srcAdapter =
-                    new CenteredSpinnerAdapter<>(getContext()
+            GravitatedSpinnerAdapter<String> srcAdapter =
+                    new GravitatedSpinnerAdapter<>(getContext()
                             , android.R.layout.simple_spinner_item,
                             srcNames);
             srcAdapter.setDropDownViewResource(android.R.layout
@@ -86,8 +110,8 @@ public class DictionaryDialog extends DialogFragment {
 
             ArrayList<String> initialItem =
                     new ArrayList<String>(Collections.singletonList(getString(R.string.loading)));
-            CenteredSpinnerAdapter<String> dstAdapter =
-                    new CenteredSpinnerAdapter<>(getContext()
+            GravitatedSpinnerAdapter<String> dstAdapter =
+                    new GravitatedSpinnerAdapter<>(getContext()
                             , android.R.layout.simple_spinner_item, initialItem);
             dstAdapter.setDropDownViewResource(android.R.layout
                     .simple_spinner_dropdown_item);
@@ -101,6 +125,7 @@ public class DictionaryDialog extends DialogFragment {
             recycler.getAdapter().registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
                 @Override
                 public void onChanged() {
+
                     int selected = ((RecyclerItemAdapter) recycler.getAdapter()).getSelected();
                     if (selected == -1) {
                         binding.deleteDictBtt.setEnabled(false);
@@ -155,12 +180,14 @@ public class DictionaryDialog extends DialogFragment {
             RecyclerItemAdapter recyclerItemAdapter =
                     (RecyclerItemAdapter) binding.uploadedDictionariesRecycler.getAdapter();
             recyclerItemAdapter.setDataSet(manager.getUploadedDictionaryNames());
+
+
             recyclerItemAdapter.notifyDataSetChanged();
 
             ArrayList<String> srcNames =
                     manager.getAvailableDictionarySourceNames();
-            CenteredSpinnerAdapter<String> arrayAdapter =
-                    (CenteredSpinnerAdapter<String>) binding.srcSpinner.getAdapter();
+            GravitatedSpinnerAdapter<String> arrayAdapter =
+                    (GravitatedSpinnerAdapter<String>) binding.srcSpinner.getAdapter();
             arrayAdapter.clear();
             arrayAdapter.addAll(srcNames);
             binding.srcSpinner.setAdapter(arrayAdapter);
@@ -186,8 +213,8 @@ public class DictionaryDialog extends DialogFragment {
                 case R.id.src_spinner: {
 
                     ArrayList<String> dstNames = manager.getAvailableDictionaryDstNames(value);
-                    CenteredSpinnerAdapter<String> dstAdapter =
-                            (CenteredSpinnerAdapter<String>) binding.dstSpinner.getAdapter();
+                    GravitatedSpinnerAdapter<String> dstAdapter =
+                            (GravitatedSpinnerAdapter<String>) binding.dstSpinner.getAdapter();
                     dstAdapter.clear();
                     dstAdapter.addAll(dstNames);
                     binding.dstSpinner.setAdapter(dstAdapter);

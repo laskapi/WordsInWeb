@@ -103,7 +103,6 @@ public class DictionaryManager extends Observable {
                 uploadedDictionaries.add(dictionary);
                 setChanged();
                 notifyObservers();
-                clearChanged();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,7 +123,6 @@ public class DictionaryManager extends Observable {
             availableDictionaries.add(dictionary);
             setChanged();
             notifyObservers();
-            clearChanged();
             return true;
         }
 

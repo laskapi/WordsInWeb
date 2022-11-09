@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:paddingHorizontal="15dp"
-    android:textSize="25dp">
+    android:paddingHorizontal="@dimen/default_padding"
+    >
 
 </TextView>
