@@ -7,6 +7,7 @@
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable-xxhdpi/background.xml" value="0.1" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable/background.xml" value="0.2265" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
+        <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable/spinner_background.xml" value="0.2555" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/drawable/underline.xml" value="0.2265" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/activity_main.xml" value="0.1" />
         <entry key="..\:/Myapps/AndroidStudioProjects/WordsInWeb/app/src/main/res/layout/dictionaries_manager.xml" value="0.25" />
@@ -20,7 +21,7 @@
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

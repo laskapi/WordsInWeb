@@ -16,6 +16,5 @@
     <string name="you_have_to_upload">You have to upload at least one dictionary</string>
     <string name="uploaded_dictionaries">Uploaded dictionaries:</string>
     <string name="close">Close</string>
-    <string name="dictionaries_spinner">dictionaries_Spinner</string>
 
 </resources>

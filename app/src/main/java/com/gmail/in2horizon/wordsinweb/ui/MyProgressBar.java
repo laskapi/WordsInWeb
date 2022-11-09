@@ -1,6 +1,7 @@
 package com.gmail.in2horizon.wordsinweb.ui;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,8 +39,10 @@ public class MyProgressBar extends ConstraintLayout {
     public void setProgress(Object amount) {
         if (amount==null) {
             progressTextView.setText(getContext().getString(R.string.done));
-            getHandler().postDelayed(this::hide, 1000);
-
+          Handler handler= getHandler();
+          if(handler!=null) {
+              handler.postDelayed(this::hide, 1000);
+          }
         } else {
             progressTextView.setText(getContext().getString(R.string.loading, (String) amount));
         }

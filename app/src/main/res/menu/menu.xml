@@ -13,10 +13,9 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/dictionaries_spinner"
-        
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="0"
+        android:layout_weight="1"
         android:spinnerMode="dropdown"
         android:textColor="@color/black"
         android:title="@string/dictionaries_spinner"

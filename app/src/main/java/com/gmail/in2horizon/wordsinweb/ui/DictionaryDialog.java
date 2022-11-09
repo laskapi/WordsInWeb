@@ -3,18 +3,24 @@ package com.gmail.in2horizon.wordsinweb.ui;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.gmail.in2horizon.wordsinweb.R;
@@ -43,6 +49,7 @@ public class DictionaryDialog extends DialogFragment implements Observer {
         binding = DictionaryDialogBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
 
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(view)
                 .setPositiveButton(R.string.close,
@@ -59,7 +66,22 @@ public class DictionaryDialog extends DialogFragment implements Observer {
             binding.myProgressBar.show();
         }
         dialog = builder.create();
+
         return dialog;
+    }
+
+    @Override
+    public void show(@NonNull FragmentManager manager, @Nullable String tag) {
+        super.show(manager, tag);
+        manager.executePendingTransactions();
+        Rect displayRectangle = new Rect();
+
+        int height = (int) (getResources().getDisplayMetrics().heightPixels * 0.9);
+
+        if (getDialog() != null) {
+            getDialog().getWindow().setLayout(
+                    getDialog().getWindow().getAttributes().width, height);
+        }
     }
 
     @Override
@@ -186,6 +208,7 @@ public class DictionaryDialog extends DialogFragment implements Observer {
 
             ArrayList<String> srcNames =
                     manager.getAvailableDictionarySourceNames();
+
             GravitatedSpinnerAdapter<String> arrayAdapter =
                     (GravitatedSpinnerAdapter<String>) binding.srcSpinner.getAdapter();
             arrayAdapter.clear();

@@ -38,6 +38,7 @@ public class GravitatedSpinnerAdapter<T> extends ArrayAdapter<T>  {
         view.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         TextView textView = (TextView)view.findViewById(android.R.id.text1);
         textView.setPadding(5, 5, 5, 5);
+
         textView.setGravity(Gravity.CENTER);
         return view;
     }

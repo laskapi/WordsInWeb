@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private String query;
     private Menu myMenu;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                         dst = getString(R.string.no_translation);
                     }
 
-                    dst = dst.replace("|", "\n");
+                    dst = dst.replace("|", ", ");
                     binding.dstTextview.setText(dst);
 
                 });
@@ -82,58 +83,15 @@ public class MainActivity extends AppCompatActivity {
             public boolean handleMessage(@NonNull Message msg) {
                 DictionaryManager manager = (DictionaryManager) msg.obj;
                 viewModel.setManager(manager);
+
+
                 if(manager.getUploadedDictionaryNames().isEmpty()){
                     DictionaryDialog dialog = new DictionaryDialog();
                     dialog.show(getSupportFragmentManager(), DictionaryDialog.TAG);
 
                 }
-                List<String> items = prepareDictionarySpinnerData(manager);
-                SpinnerObserverAdapter<String> adapter =
-                        new SpinnerObserverAdapter<String>(MainActivity.this,
-                                android.R.layout.simple_spinner_item, items) {
-
-                            @Override
-                            public void update(Observable manager, Object arg) {
-                                Log.d(TAG,"changed");
-                                clear();
-                                addAll(prepareDictionarySpinnerData((DictionaryManager) manager));
-                                notifyDataSetChanged();
-
-                            }
-                        };
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                manager.addObserver(adapter);
-
-                Spinner dictionariesSpinner=
-                        (Spinner) myMenu.findItem(R.id.dictionaries_spinner).getActionView();
-                dictionariesSpinner.setAdapter(adapter);
-                dictionariesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(AdapterView<?> parent, View view, int position,
-                                               long id) {
-                        String name = (String) parent.getAdapter().getItem(position);
-                        Optional<Dictionary> optDictionary =
-                                manager.getUploadedDictionary4name(name);
-
-                        optDictionary.ifPresent(dictionary ->
-                                viewModel.setDictionary(getApplicationContext(),
-                                        dictionary.getFileName()));
-                    }
-
-                    @Override
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-
-                return false;
-            }
-
-            private List<String> prepareDictionarySpinnerData(DictionaryManager manager) {
-                return manager.getUploadedDictionaryNames().isEmpty() ?
-                        Arrays.asList(getString(R.string.upload_dictionary_first)) :
-                        manager.getUploadedDictionaryNames();
-            }
-        }));
+            return false;
+        }}));
     }
 
     private void closeSoftInput(View host) {
@@ -171,8 +129,60 @@ public class MainActivity extends AppCompatActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         myMenu=menu;
+        viewModel.getManager().observe(this, this::setDictionarySpinner);
         return true;
     }
+
+    private void setDictionarySpinner(DictionaryManager manager) {
+
+
+            List<String> items = prepareDictionarySpinnerData(manager);
+            SpinnerObserverAdapter<String> adapter =
+                    new SpinnerObserverAdapter<String>(MainActivity.this,
+                            android.R.layout.simple_spinner_item, items) {
+
+                        @Override
+                        public void update(Observable manager, Object arg) {
+                            Log.d(TAG,"changed");
+                            clear();
+                            addAll(prepareDictionarySpinnerData((DictionaryManager) manager));
+                            notifyDataSetChanged();
+
+                        }
+                    };
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            manager.addObserver(adapter);
+
+            Spinner dictionariesSpinner=
+                    (Spinner) myMenu.findItem(R.id.dictionaries_spinner).getActionView();
+            dictionariesSpinner.setAdapter(adapter);
+            dictionariesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position,
+                                           long id) {
+                    String name = (String) parent.getAdapter().getItem(position);
+                    Optional<Dictionary> optDictionary =
+                            manager.getUploadedDictionary4name(name);
+
+                    optDictionary.ifPresent(dictionary ->
+                            viewModel.setDictionary(getApplicationContext(),
+                                    dictionary.getFileName()));
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+
+        }
+
+        private List<String> prepareDictionarySpinnerData(DictionaryManager manager) {
+            return manager.getUploadedDictionaryNames().isEmpty() ?
+                    Arrays.asList(getString(R.string.upload_dictionary_first)) :
+                    manager.getUploadedDictionaryNames();
+        }
+
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
