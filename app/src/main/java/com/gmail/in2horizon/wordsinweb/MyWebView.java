@@ -38,34 +38,7 @@ public class MyWebView extends WebView {
         if (e.getAction() == MotionEvent.ACTION_UP) {
             getSelection();
         }
-        /*
-        if (e.getAction() == MotionEvent.ACTION_DOWN) {
-            long touchTime = e.getEventTime() - e.getDownTime();
-            if (touchTime < 1000) {
 
-                int index = e.getActionIndex();
-
-                MotionEvent.PointerProperties[] properties = new MotionEvent.PointerProperties[1];
-                properties[0] = new MotionEvent.PointerProperties();
-                e.getPointerProperties(index, properties[0]);
-
-                MotionEvent.PointerCoords[] coords = new MotionEvent.PointerCoords[1];
-                coords[0] = new MotionEvent.PointerCoords();
-                e.getPointerCoords(index, coords[0]);
-
-                MotionEvent mEvent = MotionEvent.obtain(e.getDownTime()- 5000,
-                        e.getEventTime()- 5000 , e.getAction(),
-                        e.getPointerCount(), properties, coords, e.getMetaState(),
-                        e.getButtonState(),
-                        e.getXPrecision(), e.getYPrecision(), e.getDeviceId(),
-                        e.getEdgeFlags(),
-                        e.getSource(), e.getFlags());
-
-
-                Log.d(TAG, mEvent.toString());
-                return super.onTouchEvent(mEvent);
-            }
-        }*/
         return super.onTouchEvent(e);
 
 
@@ -138,30 +111,7 @@ Log.d("Success",
     void prepareDoc() {
 
         evaluateJavascript(
-                /*"(function() {$('p').each(function() {" +
-                        "            var $this = $(this);" +
-                        "            $this.html($this.text().replace(/\\b
-                        (\\w+)\\b/g, \"<span>$1</span>\"));" +
-                        "        });" +
-                        "        $('p span').hover(" +
-                        "            function() { $('#word').text($(this).css
-                        ('background-color','#ffff66').text()); }," +
-                        "            function() { $('#word').text(''); $
-                        (this).css('background-color',''); }" +
-                        "        );" +
-                        "    });",*/
 
-
-                /*"(function(){ var items = document.getElementsByTagName
-                (\"*\");\n" +
-                        "for (var i = items.length; i--;) {\n" +
-                        "       items[i].html(items[i].text().replace(/\\\\b
-                        (\\\\w+)\\\\b/g, \\\"<span>$1</span>\\\")}\n" +
-                        "})()",*/
-
-/*
-                "elems[i].innerHTML='style.backgroundColor=pink';}" +
-*/
 
 
                 "(function(){ var elems=document.getElementsByTagName(\"*\");" +
